@@ -22,9 +22,9 @@ jobs:
           SOPS_AGE_KEY: ${{ secrets.AGE_PRIVATE_KEY }}
 
         # コメントと空行を除去してGITHUB_ENVへ
-      - name: Export to env
-        run: |
-          grep -v '^\s*#' .env | grep -v '^\s*$' >> $GITHUB_ENV
+      # - name: Export to env
+      #  run: |
+      #    grep -v '^\s*#' .env | grep -v '^\s*$' >> $GITHUB_ENV
 
       - name: Setup Go
         uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
@@ -38,7 +38,9 @@ jobs:
         id: run
           # コマンドの出力に機密情報が含まれる可能性があるため、出力を非表示にする 
         run: |
-          set +x 
+          set -a
+          source .env
+          set +a
           
           OUTPUT=$(./tester)
           MSG=$(echo "$OUTPUT" | grep SLACK_MESSAGE | cut -d '=' -f2-)
@@ -46,4 +48,8 @@ jobs:
 
       - name: Notify Slack
         run: |
+          set -a
+          source .env
+          set +a
+          
           curl -X POST "$SLACK_WEBHOOK_URL"             -H 'Content-type: application/json'             --data "{\"text\":\"S3 Latency: ${{ steps.run.outputs.msg }}\"}"
