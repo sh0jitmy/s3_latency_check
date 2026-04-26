@@ -12,6 +12,25 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
+      - name: Install tools
+        run: |
+          curl -L https://github.com/mozilla/sops/releases/latest/download/sops-linux-amd64 -o sops
+          chmod +x sops
+          sudo mv sops /usr/local/bin/
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+      - name: Decrypt .env
+        run: |
+          sops -d .env.enc > .env
+        env:
+          SOPS_KEY: ${{ secrets.AGE_PRIVATE_KEY }}
+
+        # コメントと空行を除去してGITHUB_ENVへ
+      - name: Export to env
+        run: |
+          grep -v '^\s*#' .env | grep -v '^\s*$' >> $GITHUB_ENV
+
       - name: Setup Go
         uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
@@ -28,16 +47,8 @@ jobs:
 
           MSG=$(echo "$OUTPUT" | grep SLACK_MESSAGE | cut -d '=' -f2-)
           echo "msg=$MSG" >> $GITHUB_OUTPUT
-        env:
-          AWS_REGION: ap-northeast-1
-          S3_BUCKET: ${{ secrets.S3_BUCKET }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
 
       - name: Notify Slack
         if: always()
         run: |
-          curl -X POST "$WEBHOOK_URL"             -H 'Content-type: application/json'             --data "{\"text\":\"S3 Latency: ${{ steps.run.outputs.msg }}\"}"
-        env:
-          WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          curl -X POST "$SLACK_WEBHOOK_URL"             -H 'Content-type: application/json'             --data "{\"text\":\"S3 Latency: ${{ steps.run.outputs.msg }}\"}"
