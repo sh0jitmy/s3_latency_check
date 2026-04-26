@@ -12,13 +12,8 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
-      - name: Install tools
-        run: |
-          curl -L https://github.com/mozilla/sops/releases/latest/download/sops-linux-amd64 -o sops
-          chmod +x sops
-          sudo mv sops /usr/local/bin/
-          sudo apt-get update
-          sudo apt-get install -y jq
+      - name: Setup SOPS
+        uses: nhedger/setup-sops@187c90dbb4e28c3225263886266a5b92baa7e5a1 # v2.1.1
 
       - name: Decrypt .env
         run: |
