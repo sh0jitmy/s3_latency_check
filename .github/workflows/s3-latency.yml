@@ -36,8 +36,10 @@ jobs:
 
       - name: Run Test
         id: run
+          # コマンドの出力に機密情報が含まれる可能性があるため、出力を非表示にする 
         run: |
-          set +x # コマンドの出力に機密情報が含まれる可能性があるため、出力を非表示にする 
+          set +x 
+          
           OUTPUT=$(./tester)
           MSG=$(echo "$OUTPUT" | grep SLACK_MESSAGE | cut -d '=' -f2-)
           echo "msg=$MSG" >> $GITHUB_OUTPUT
