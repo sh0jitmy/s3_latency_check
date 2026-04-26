@@ -41,6 +41,11 @@ func main() {
 		panic(err)
 	}
 
+	if os.Getenv("S3_ENDPOINT") == "" {
+		log.Fatal("S3_ENDPOINT is not set")
+		return
+	}
+
 	client := s3.NewFromConfig(cfg, func(o *s3.Options) {
 		o.UsePathStyle = true
 		o.BaseEndpoint = aws.String(os.Getenv("S3_ENDPOINT"))
