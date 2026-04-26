@@ -17,9 +17,9 @@ jobs:
 
       - name: Decrypt .env
         run: |
-          sops -d .env.enc > .env
+          sops decrypt --input-type dotenv --output-type dotenv .env.enc > .env
         env:
-          SOPS_KEY: ${{ secrets.AGE_PRIVATE_KEY }}
+          SOPS_AGE_KEY: ${{ secrets.AGE_PRIVATE_KEY }}
 
         # コメントと空行を除去してGITHUB_ENVへ
       - name: Export to env
@@ -44,6 +44,5 @@ jobs:
           echo "msg=$MSG" >> $GITHUB_OUTPUT
 
       - name: Notify Slack
-        if: always()
         run: |
           curl -X POST "$SLACK_WEBHOOK_URL"             -H 'Content-type: application/json'             --data "{\"text\":\"S3 Latency: ${{ steps.run.outputs.msg }}\"}"
