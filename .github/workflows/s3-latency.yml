@@ -38,8 +38,6 @@ jobs:
         id: run
         run: |
           OUTPUT=$(./tester)
-          echo "$OUTPUT"
-
           MSG=$(echo "$OUTPUT" | grep SLACK_MESSAGE | cut -d '=' -f2-)
           echo "msg=$MSG" >> $GITHUB_OUTPUT
 
